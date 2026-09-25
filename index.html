@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ប្រព័ន្ធព័ត៌មានសិស្ស</title>
+
+<!-- QR Code Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,"Noto Sans Khmer",sans-serif;
+    background:#eef3f8;
+    color:#222;
+}
+
+header{
+    background:linear-gradient(135deg,#075985,#0284c7);
+    color:white;
+    text-align:center;
+    padding:25px 15px;
+}
+
+header h1{
+    margin:0 0 8px;
+    font-size:28px;
+}
+
+header p{
+    margin:0;
+}
+
+.container{
+    width:95%;
+    max-width:1200px;
+    margin:20px auto;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 4px 15px rgba(0,0,0,.08);
+    margin-bottom:20px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+}
+
+label{
+    display:block;
+    font-weight:bold;
+    margin-bottom:6px;
+}
+
+input,select{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:15px;
+}
+
+.photo-box{
+    text-align:center;
+}
+
+#preview{
+    width:130px;
+    height:160px;
+    object-fit:cover;
+    border:2px solid #0ea5e9;
+    border-radius:10px;
+    display:block;
+    margin:10px auto;
+    background:#f1f5f9;
+}
+
+button{
+    border:0;
+    border-radius:8px;
+    padding:11px 16px;
+    cursor:pointer;
+    font-weight:bold;
+    margin:4px;
+}
+
+.btn-add{
+    background:#16a34a;
+    color:white;
+}
+
+.btn-reset{
+    background:#64748b;
+    color:white;
+}
+
+.btn-edit{
+    background:#f59e0b;
+    color:white;
+}
+
+.btn-delete{
+    background:#dc2626;
+    color:white;
+}
+
+.btn-card{
+    background:#2563eb;
+    color:white;
+}
+
+.search{
+    margin-bottom:15px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:900px;
+}
+
+.table-wrapper{
+    overflow-x:auto;
+}
+
+th,td{
+    border-bottom:1px solid #ddd;
+    padding:10px;
+    text-align:center;
+}
+
+th{
+    background:#075985;
+    color:white;
+}
+
+.student-photo{
+    width:55px;
+    height:65px;
+    object-fit:cover;
+    border-radius:6px;
+}
+
+.empty{
+    text-align:center;
+    padding:30px;
+    color:#777;
+}
+
+/* ID CARD */
+
+#idCardArea{
+    display:none;
+}
+
+.id-card{
+    width:420px;
+    max-width:100%;
+    margin:auto;
+    background:white;
+    border:4px solid #075985;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 8px 25px rgba(0,0,0,.15);
+}
+
+.id-header{
+    background:#075985;
+    color:white;
+    padding:15px;
+    text-align:center;
+}
+
+.id-header h2{
+    margin:0;
+    font-size:22px;
+}
+
+.id-body{
+    padding:20px;
+    text-align:center;
+}
+
+.id-photo{
+    width:120px;
+    height:145px;
+    object-fit:cover;
+    border:3px solid #075985;
+    border-radius:8px;
+}
+
+.id-info{
+    text-align:left;
+    margin-top:15px;
+    line-height:1.8;
+}
+
+#qrcode{
+    margin:15px auto;
+    width:128px;
+}
+
+.id-footer{
+    background:#f1f5f9;
+    padding:10px;
+    text-align:center;
+    font-size:13px;
+}
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.65);
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:1000;
+}
+
+.modal-content{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    width:500px;
+    max-width:100%;
+    max-height:90vh;
+    overflow:auto;
+}
+
+.close{
+    float:right;
+    font-size:25px;
+    cursor:pointer;
+}
+
+@media(max-width:600px){
+    header h1{
+        font-size:22px;
+    }
+
+    .card{
+        padding:15px;
+    }
+
+    .id-card{
+        width:350px;
+    }
+}
+
+@media print{
+    body *{
+        visibility:hidden;
+    }
+
+    #idCardArea,
+    #idCardArea *{
+        visibility:visible;
+    }
+
+    #idCardArea{
+        display:block;
+        position:absolute;
+        left:0;
+        top:0;
+        width:100%;
+    }
+
+    .id-card{
+        box-shadow:none;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>📚 ប្រព័ន្ធគ្រប់គ្រងព័ត៌មានសិស្ស</h1>
+    <p>Student Information Management System</p>
+</header>
+
+<div class="container">
+
+<!-- FORM -->
+<div class="card">
+
+<h2>➕ បន្ថែមព័ត៌មានសិស្ស</h2>
+
+<form id="studentForm">
+
+<div class="form-grid">
+
+<div class="photo-box">
+<label>📷 រូបថតសិស្ស</label>
+<img id="preview" src="" alt="Student Photo">
+<input type="file" id="photo" accept="image/*">
+</div>
+
+<div>
+<label>🆔 អត្តលេខ</label>
+<input type="text" id="studentId" placeholder="ឧ. ST001" required>
+</div>
+
+<div>
+<label>👤 ឈ្មោះសិស្ស</label>
+<input type="text" id="name" placeholder="បញ្ចូលឈ្មោះសិស្ស" required>
+</div>
+
+<div>
+<label>⚧ ភេទ</label>
+<select id="gender" required>
+<option value="">-- ជ្រើសរើស --</option>
+<option value="ប្រុស">ប្រុស</option>
+<option value="ស្រី">ស្រី</option>
+</select>
+</div>
+
+<div>
+<label>🎂 ថ្ងៃខែឆ្នាំកំណើត</label>
+<input type="date" id="dob" required>
+</div>
+
+<div>
+<label>📞 លេខទូរស័ព្ទ</label>
+<input type="tel" id="phone" placeholder="012 345 678">
+</div>
+
+</div>
+
+<br>
+
+<button type="submit" class="btn-add" id="saveBtn">
+➕ បន្ថែមសិស្ស
+</button>
+
+<button type="button" class="btn-reset" onclick="resetForm()">
+🔄 សម្អាត
+</button>
+
+</form>
+</div>
+
+
+<!-- SEARCH -->
+<div class="card">
+
+<h2>🔍 ស្វែងរកសិស្ស</h2>
+
+<input
+type="text"
+id="search"
+class="search"
+placeholder="ស្វែងរកតាមអត្តលេខ ឬឈ្មោះ..."
+oninput="displayStudents()"
+>
+
+<div class="table-wrapper">
+
+<table>
+
+<thead>
+<tr>
+<th>📷 រូបថត</th>
+<th>🆔 អត្តលេខ</th>
+<th>👤 ឈ្មោះ</th>
+<th>⚧ ភេទ</th>
+<th>🎂 ថ្ងៃកំណើត</th>
+<th>📞 ទូរស័ព្ទ</th>
+<th>🔳 QR</th>
+<th>⚙️ សកម្មភាព</th>
+</tr>
+</thead>
+
+<tbody id="studentTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<!-- ID CARD -->
+<div id="idCardArea">
+
+<div class="id-card">
+
+<div class="id-header">
+<h2>STUDENT ID CARD</h2>
+<div>ប័ណ្ណសម្គាល់សិស្ស</div>
+</div>
+
+<div class="id-body">
+
+<img id="cardPhoto" class="id-photo">
+
+<div class="id-info">
+
+<b>🆔 អត្តលេខ:</b>
+<span id="cardId"></span>
+<br>
+
+<b>👤 ឈ្មោះ:</b>
+<span id="cardName"></span>
+<br>
+
+<b>⚧ ភេទ:</b>
+<span id="cardGender"></span>
+<br>
+
+<b>🎂 ថ្ងៃកំណើត:</b>
+<span id="cardDob"></span>
+<br>
+
+<b>📞 ទូរស័ព្ទ:</b>
+<span id="cardPhone"></span>
+
+</div>
+
+<div id="qrcode"></div>
+
+</div>
+
+<div class="id-footer">
+QR Code ផ្ទុកព័ត៌មានសិស្ស
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+
+<div class="modal-content">
+
+<span class="close" onclick="closeModal()">×</span>
+
+<h2>🪪 Student ID Card</h2>
+
+<div id="modalCard"></div>
+
+<br>
+
+<button class="btn-card" onclick="printCard()">
+🖨️ បោះពុម្ព ID Card
+</button>
+
+</div>
+
+</div>
+
+
+<script>
+
+let students = JSON.parse(localStorage.getItem("students")) || [];
+
+let editIndex = -1;
+
+let currentPhoto = "";
+
+
+// ==========================
+// PHOTO PREVIEW
+// ==========================
+
+document.getElementById("photo").addEventListener("change",function(){
+
+const file = this.files[0];
+
+if(!file) return;
+
+const reader = new FileReader();
+
+reader.onload = function(e){
+
+currentPhoto = e.target.result;
+
+document.getElementById("preview").src = currentPhoto;
+
+};
+
+reader.readAsDataURL(file);
+
+});
+
+
+// ==========================
+// SAVE STUDENT
+// ==========================
+
+document.getElementById("studentForm").addEventListener("submit",function(e){
+
+e.preventDefault();
+
+const student = {
+
+id: document.getElementById("studentId").value.trim(),
+
+name: document.getElementById("name").value.trim(),
+
+gender: document.getElementById("gender").value,
+
+dob: document.getElementById("dob").value,
+
+phone: document.getElementById("phone").value.trim(),
+
+photo: currentPhoto || ""
+
+};
+
+
+// CHECK DUPLICATE ID
+
+if(editIndex === -1){
+
+const exists = students.some(s => s.id === student.id);
+
+if(exists){
+
+alert("⚠️ អត្តលេខនេះមានរួចហើយ!");
+
+return;
+
+}
+
+students.push(student);
+
+alert("✅ បានបន្ថែមសិស្សជោគជ័យ!");
+
+}else{
+
+students[editIndex] = student;
+
+editIndex = -1;
+
+document.getElementById("saveBtn").innerText =
+"➕ បន្ថែមសិស្ស";
+
+alert("✅ បានកែព័ត៌មានសិស្ស!");
+
+}
+
+
+// SAVE
+
+localStorage.setItem("students",JSON.stringify(students));
+
+resetForm();
+
+displayStudents();
+
+});
+
+
+// ==========================
+// DISPLAY STUDENTS
+// ==========================
+
+function displayStudents(){
+
+const table = document.getElementById("studentTable");
+
+const search =
+document.getElementById("search").value.toLowerCase();
+
+table.innerHTML = "";
+
+const filtered = students.filter(s =>
+
+s.id.toLowerCase().includes(search) ||
+
+s.name.toLowerCase().includes(search)
+
+);
+
+if(filtered.length === 0){
+
+table.innerHTML =
+`<tr>
+<td colspan="8" class="empty">
+មិនទាន់មានព័ត៌មានសិស្ស
+</td>
+</tr>`;
+
+return;
+
+}
+
+
+filtered.forEach((student) => {
+
+const realIndex = students.indexOf(student);
+
+const tr = document.createElement("tr");
+
+tr.innerHTML = `
+
+<td>
+
+${
+student.photo
+?
+`<img src="${student.photo}" class="student-photo">`
+:
+"📷"
+}
+
+</td>
+
+<td>${escapeHTML(student.id)}</td>
+
+<td>${escapeHTML(student.name)}</td>
+
+<td>${escapeHTML(student.gender)}</td>
+
+<td>${formatDate(student.dob)}</td>
+
+<td>${escapeHTML(student.phone)}</td>
+
+<td>
+
+<button class="btn-card"
+onclick="showCard(${realIndex})">
+🔳 QR
+</button>
+
+</td>
+
+<td>
+
+<button class="btn-edit"
+onclick="editStudent(${realIndex})">
+✏️ កែ
+</button>
+
+<button class="btn-delete"
+onclick="deleteStudent(${realIndex})">
+🗑️ លុប
+</button>
+
+</td>
+
+`;
+
+table.appendChild(tr);
+
+});
+
+}
+
+
+// ==========================
+// EDIT
+// ==========================
+
+function editStudent(index){
+
+const s = students[index];
+
+document.getElementById("studentId").value = s.id;
+
+document.getElementById("name").value = s.name;
+
+document.getElementById("gender").value = s.gender;
+
+document.getElementById("dob").value = s.dob;
+
+document.getElementById("phone").value = s.phone;
+
+currentPhoto = s.photo || "";
+
+document.getElementById("preview").src =
+s.photo || "";
+
+editIndex = index;
+
+document.getElementById("saveBtn").innerText =
+"💾 រក្សាទុកការកែប្រែ";
+
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
+
+}
+
+
+// ==========================
+// DELETE
+// ==========================
+
+function deleteStudent(index){
+
+const s = students[index];
+
+if(!confirm(
+"តើអ្នកពិតជាចង់លុបសិស្ស " +
+s.name +
+" មែនទេ?"
+)) return;
+
+students.splice(index,1);
+
+localStorage.setItem(
+"students",
+JSON.stringify(students)
+);
+
+displayStudents();
+
+}
+
+
+// ==========================
+// SHOW ID CARD
+// ==========================
+
+function showCard(index){
+
+const s = students[index];
+
+document.getElementById("cardPhoto").src =
+s.photo || "";
+
+document.getElementById("cardId").innerText =
+s.id;
+
+document.getElementById("cardName").innerText =
+s.name;
+
+document.getElementById("cardGender").innerText =
+s.gender;
+
+document.getElementById("cardDob").innerText =
+formatDate(s.dob);
+
+document.getElementById("cardPhone").innerText =
+s.phone;
+
+
+// QR DATA
+
+const qrData =
+
+"ព័ត៌មានសិស្ស\n" +
+
+"អត្តលេខ: " + s.id + "\n" +
+
+"ឈ្មោះ: " + s.name + "\n" +
+
+"ភេទ: " + s.gender + "\n" +
+
+"ថ្ងៃកំណើត: " + formatDate(s.dob) + "\n" +
+
+"ទូរស័ព្ទ: " + s.phone;
+
+
+// CREATE QR
+
+const qr = document.getElementById("qrcode");
+
+qr.innerHTML = "";
+
+new QRCode(qr,{
+
+text:qrData,
+
+width:128,
+
+height:128,
+
+correctLevel:QRCode.CorrectLevel.H
+
+});
+
+
+// OPEN MODAL
+
+const card = document.querySelector(".id-card").cloneNode(true);
+
+card.querySelector("#cardPhoto").src =
+s.photo || "";
+
+card.querySelector("#cardId").innerText = s.id;
+
+card.querySelector("#cardName").innerText = s.name;
+
+card.querySelector("#cardGender").innerText = s.gender;
+
+card.querySelector("#cardDob").innerText =
+formatDate(s.dob);
+
+card.querySelector("#cardPhone").innerText =
+s.phone;
+
+document.getElementById("modalCard").innerHTML = "";
+
+document.getElementById("modalCard").appendChild(card);
+
+document.getElementById("modal").style.display = "flex";
+
+}
+
+
+// ==========================
+// CLOSE MODAL
+// ==========================
+
+function closeModal(){
+
+document.getElementById("modal").style.display =
+"none";
+
+}
+
+
+// ==========================
+// PRINT
+// ==========================
+
+function printCard(){
+
+window.print();
+
+}
+
+
+// ==========================
+// RESET FORM
+// ==========================
+
+function resetForm(){
+
+document.getElementById("studentForm").reset();
+
+document.getElementById("preview").src = "";
+
+currentPhoto = "";
+
+editIndex = -1;
+
+document.getElementById("saveBtn").innerText =
+"➕ បន្ថែមសិស្ស";
+
+}
+
+
+// ==========================
+// DATE FORMAT
+// ==========================
+
+function formatDate(date){
+
+if(!date) return "";
+
+const d = new Date(date);
+
+if(isNaN(d)) return date;
+
+return d.toLocaleDateString("km-KH",{
+
+year:"numeric",
+month:"2-digit",
+day:"2-digit"
+
+});
+
+}
+
+
+// ==========================
+// SECURITY
+// ==========================
+
+function escapeHTML(str){
+
+return String(str || "")
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+
+}
+
+
+// ==========================
+// START
+// ==========================
+
+displayStudents();
+
+</script>
+
+</body>
+</html>
